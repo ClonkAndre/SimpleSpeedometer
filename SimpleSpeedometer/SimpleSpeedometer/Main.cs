@@ -77,7 +77,7 @@ namespace SimpleSpeedometer {
             }
 
             // Create digits texture
-            D3DResult r = gfx.CreateD3D9Texture(device, digitsFilePath);
+            D3DResult r = gfx.CreateD3D9Texture(digitsFilePath);
             if (r.Error != null)
             {
                 CGame.Console.PrintError(string.Format("[SimpleSpeedometer] An error occured while trying to create 'digits' texture! Details: {0}", r.Error.ToString()));
@@ -88,7 +88,7 @@ namespace SimpleSpeedometer {
             }
 
             // Create pin texture
-            r = gfx.CreateD3D9Texture(device, pinFilePath);
+            r = gfx.CreateD3D9Texture(pinFilePath);
             if (r.Error != null)
             {
                 CGame.Console.PrintError(string.Format("[SimpleSpeedometer] An error occured while trying to create 'pin' texture! Details: {0}", r.Error.ToString()));
@@ -151,8 +151,8 @@ namespace SimpleSpeedometer {
             // Draw digits and pin
             if (!(texturesAlpha <= 0))
             {
-                gfx.DrawTexture(device, digitsTexture, new RectangleF(rect.X - digitsAndPinOffsetX, rect.Y - digitsAndPinOffsetY, rect.Width + digitsAndPinSizeWidth, rect.Height + digitsAndPinSizeHeight), Color.FromArgb(texturesAlpha, Color.White));
-                gfx.DrawTexture(device, pinTexture, new RectangleF(rect.X - digitsAndPinOffsetX, rect.Y - digitsAndPinOffsetY, rect.Width + digitsAndPinSizeWidth, rect.Height + digitsAndPinSizeHeight), rot, Color.FromArgb(texturesAlpha, Color.White));
+                gfx.DrawTexture(digitsTexture, new RectangleF(rect.X - digitsAndPinOffsetX, rect.Y - digitsAndPinOffsetY, rect.Width + digitsAndPinSizeWidth, rect.Height + digitsAndPinSizeHeight), Color.FromArgb(texturesAlpha, Color.White));
+                gfx.DrawTexture(pinTexture, new RectangleF(rect.X - digitsAndPinOffsetX, rect.Y - digitsAndPinOffsetY, rect.Width + digitsAndPinSizeWidth, rect.Height + digitsAndPinSizeHeight), rot, Color.FromArgb(texturesAlpha, Color.White));
             }
         }
 
