@@ -121,8 +121,6 @@ namespace SimpleSpeedometer {
                 {
                     if (!(texturesAlpha <= 0))
                         texturesAlpha -= fadingOutSpeed;
-                    if (texturesAlpha < 0)
-                        texturesAlpha = 0;
                 }
                 else
                 {
@@ -138,8 +136,6 @@ namespace SimpleSpeedometer {
                     {
                         if (!(texturesAlpha >= 255))
                             texturesAlpha += fadingInSpeed;
-                        if (texturesAlpha > 255)
-                            texturesAlpha = 255;
                     }
                     else
                     {
@@ -148,11 +144,17 @@ namespace SimpleSpeedometer {
                 }
             }
 
+            // Prevent alpha value from being under 0 and above 255
+            if (texturesAlpha < 0)
+                texturesAlpha = 0;
+            if (texturesAlpha > 255)
+                texturesAlpha = 255;
+
             // Draw digits and pin
             if (!(texturesAlpha <= 0))
             {
-                gfx.DrawTexture(digitsTexture, new RectangleF(rect.X - digitsAndPinOffsetX, rect.Y - digitsAndPinOffsetY, rect.Width + digitsAndPinSizeWidth, rect.Height + digitsAndPinSizeHeight), Color.FromArgb(texturesAlpha, Color.White));
-                gfx.DrawTexture(pinTexture, new RectangleF(rect.X - digitsAndPinOffsetX, rect.Y - digitsAndPinOffsetY, rect.Width + digitsAndPinSizeWidth, rect.Height + digitsAndPinSizeHeight), rot, Color.FromArgb(texturesAlpha, Color.White));
+                gfx.DrawTexture(digitsTexture,  new RectangleF(rect.X - digitsAndPinOffsetX, rect.Y - digitsAndPinOffsetY, rect.Width + digitsAndPinSizeWidth, rect.Height + digitsAndPinSizeHeight), Color.FromArgb(texturesAlpha, Color.White));
+                gfx.DrawTexture(pinTexture,     new RectangleF(rect.X - digitsAndPinOffsetX, rect.Y - digitsAndPinOffsetY, rect.Width + digitsAndPinSizeWidth, rect.Height + digitsAndPinSizeHeight), rot, Color.FromArgb(texturesAlpha, Color.White));
             }
         }
 
@@ -197,9 +199,6 @@ namespace SimpleSpeedometer {
                 }
                 else
                 {
-                    // Set variable to 0 just in case it is below 0
-                    texturesAlpha = 0;
-
                     // Set the speed to 0 if the player is not currently in a vehicle
                     speed = 0f;
 
