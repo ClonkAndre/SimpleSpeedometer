@@ -31,18 +31,48 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="IVSDKDotNetWrapper, Version=1.0.0.0, Culture=neutral, processorArchitecture=x86">
+    <Reference Include="ClonksCodingLib.GTAIV">
+      <HintPath>..\..\..\ClonksCodingLib.GTAIV\ClonksCodingLib.GTAIV\ClonksCodingLib.GTAIV\bin\x86\Release\ClonksCodingLib.GTAIV.dll</HintPath>
+    </Reference>
+    <Reference Include="IVSDKDotNetWrapper, Version=1.5.0.0, Culture=neutral, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\IVSDKDotNet\Release\IVSDKDotNetWrapper.dll</HintPath>
+      <HintPath>..\..\..\IVSDKDotNet\Debug\IVSDKDotNetWrapper.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Numerics" />
+    <Reference Include="System.Windows.Forms" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Enums.cs" />
     <Compile Include="Main.cs" />
+    <Compile Include="ModSettings.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\absIcon.bin" />
+    <None Include="Resources\cruiseControlIcon.bin" />
+    <None Include="Resources\engineIcon.bin" />
+    <None Include="Resources\hazardLightsIcon.bin" />
+    <None Include="Resources\leftIndicatorIcon.bin" />
+    <None Include="Resources\lightsIcon.bin" />
+    <None Include="Resources\parkingBreakIcon.bin" />
+    <None Include="Resources\rightIndicatorIcon.bin" />
+    <None Include="Resources\seatbeltIcon.bin" />
+    <None Include="Resources\temperatureIcon.bin" />
+    <None Include="Resources\tpmsIcon.bin" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
