@@ -507,6 +507,16 @@ namespace SimpleSpeedometer
             if (CruiseControlTargetSpeed.InBetween(-1f, 1f))
                 return;
 
+            // Check if cruise control works on current vehicle
+            if ((eVehicleType)currentVehicle.VehicleType != eVehicleType.VEHICLE_TYPE_AUTOMOBILE)
+            {
+                // Disable cruise control
+                CruiseControlEnabled = false;
+                CruiseControlTargetSpeed = 0f;
+                cruiseControlTargetSpeedMultiplier = 1.0f;
+                return;
+            }
+
             if (UseAdaptiveCruiseControl)
             {
                 int handle = currentVehicle.GetHandle();
@@ -615,6 +625,68 @@ namespace SimpleSpeedometer
             else
             {
                 cruiseControlTargetSpeedMultiplier = 1.0f;
+            }
+        }
+
+        private void ToggleCruiseControl()
+        {
+            if (!IsCurrentVehicleValid())
+                return;
+            if ((eVehicleType)currentVehicle.VehicleType != eVehicleType.VEHICLE_TYPE_AUTOMOBILE)
+            {
+                ShowSubtitleMessage("Cruise control can only be enabled on cars.", 3000);
+                return;
+            }
+
+            // Toggle cruise control
+            CruiseControlEnabled = !CruiseControlEnabled;
+
+            if (!ModSettings.EnableDashboard)
+            {
+                if (CruiseControlEnabled)
+                {
+                    if (CruiseControlTargetSpeed.InBetween(0f, 1f))
+                    {
+                        CruiseControlEnabled = false;
+                        ShowSubtitleMessage("Cruise control cannot be enabled because the target speed was not set yet or is too low.", 3000);
+                    }
+                    else
+                        ShowSubtitleMessage("Cruise control enabled.");
+                }
+                else
+                {
+                    ShowSubtitleMessage("Cruise control disabled.");
+                }
+            }
+        }
+        private void SetCruiseControlTargetSpeed()
+        {
+            if (!IsCurrentVehicleValid())
+                return;
+            if ((eVehicleType)currentVehicle.VehicleType != eVehicleType.VEHICLE_TYPE_AUTOMOBILE)
+                return;
+
+            // Set cruise control target speed
+            CruiseControlTargetSpeed = currentVehicleSpeedRaw;
+
+            if (CruiseControlTargetSpeed.InBetween(-1f, 1f))
+            {
+                if (!ModSettings.EnableDashboard)
+                {
+                    CruiseControlEnabled = false;
+                    ShowSubtitleMessage("Please set a higher target speed for cruise control. Cruise control got disabled.", 3500);
+                }
+                else
+                {
+                    ShowSubtitleMessage("Please set a higher target speed for cruise control.", 3000);
+                }
+            }
+            else
+            {
+                if (!ModSettings.EnableDashboard)
+                {
+                    ShowSubtitleMessage("Cruise control target speed set to {0} {1}.", (int)currentVehicleSpeed, ModSettings.UseMPH ? "MPH" : "KM/H");
+                }
             }
         }
         #endregion
@@ -791,11 +863,12 @@ namespace SimpleSpeedometer
         }
         private void Main_OnImGuiRendering(IntPtr devicePtr, ImGuiIV_DrawingContext ctx)
         {
-            // If drawing is not allowed then we return
+            // Check if can draw speedometer and dashboard ui
             if (!allowDrawing)
                 return;
-            // If radar is off then nothing should be drawn so we just return
             if (IVMenuManager.RadarMode == 0)
+                return;
+            if (IVCutsceneMgr.IsRunning())
                 return;
             
             // Draw dashboard UI
@@ -837,11 +910,16 @@ namespace SimpleSpeedometer
                         }
 
                         if (colorValue <= 0) // Static
+                        {
                             colorValue = 0;
+                        }
                         else if (colorValue <= 50) // Blink
                         {
                             colorValue = fastBlinking ? 0 : 255;
                         }
+
+                        if (colorValue > 255)
+                            colorValue = 255;
 
                         ImGuiIV.SameLine();
                         ImGuiIV.Image(engineTexture, new Vector2(48f, 32f), Vector2.Zero, Vector2.One, Color.FromArgb(255, 255, colorValue, colorValue), Color.Transparent);
@@ -916,13 +994,16 @@ namespace SimpleSpeedometer
                     // Cruise Control
                     if (ModSettings.ShowCruiseControlIcon)
                     {
-                        Color iconColor = Color.White;
+                        if (IsCurrentVehicleValid() && (eVehicleType)currentVehicle.VehicleType == eVehicleType.VEHICLE_TYPE_AUTOMOBILE)
+                        {
+                            Color iconColor = Color.White;
 
-                        if (CruiseControlEnabled)
-                            iconColor = CruiseControlTargetSpeed.InBetween(-1f, 1f) ? Color.Orange : Color.Green;
+                            if (CruiseControlEnabled)
+                                iconColor = CruiseControlTargetSpeed.InBetween(-1f, 1f) ? Color.Orange : Color.Green;
 
-                        ImGuiIV.SameLine();
-                        ImGuiIV.Image(cruiseControlTexture, new Vector2(32f, 32f), Vector2.Zero, Vector2.One, iconColor, Color.Transparent);
+                            ImGuiIV.SameLine();
+                            ImGuiIV.Image(cruiseControlTexture, new Vector2(32f, 32f), Vector2.Zero, Vector2.One, iconColor, Color.Transparent);
+                        }
                     }
 
                     // TPMS
@@ -1106,7 +1187,6 @@ namespace SimpleSpeedometer
                     // Set window pos
                     RectangleF rect = IVGame.GetRadarRectangle();
                     ImGuiIV.SetWindowPos(new Vector2(rect.Right, rect.Y) + ModSettings.DashboardOffset);
-
                 }
                 ImGuiIV.End();
 
@@ -1133,6 +1213,9 @@ namespace SimpleSpeedometer
 
                 // Gets the radar rectangle
                 RectangleF rect = IVGame.GetRadarRectangle();
+
+                if (isFadedIn)
+                    textureAlphaValue = 255;
 
                 ctx.AddImage(digitsTexture,         new RectangleF(rect.X - digitsAndNeedleOffsetX, rect.Y - digitsAndNeedleOffsetY, rect.Width + digitsAndNeedleSizeWidth, rect.Height + digitsAndNeedleSizeHeight), Color.FromArgb(textureAlphaValue, Color.White));
                 ctx.AddImageRotated(needleTexture,  new RectangleF(rect.X - digitsAndNeedleOffsetX, rect.Y - digitsAndNeedleOffsetY, rect.Width + digitsAndNeedleSizeWidth, rect.Height + digitsAndNeedleSizeHeight), rotation, Color.FromArgb(textureAlphaValue, Color.White));
@@ -1333,51 +1416,13 @@ namespace SimpleSpeedometer
                         // Cruise control toggle
                         if (ImGuiHelper.IsKeyPressed(ModSettings.CruiseControlToggleKey, false))
                         {
-                            CruiseControlEnabled = !CruiseControlEnabled;
-
-                            if (!ModSettings.EnableDashboard)
-                            {
-                                if (CruiseControlEnabled)
-                                {
-                                    if (CruiseControlTargetSpeed.InBetween(0f, 1f))
-                                    {
-                                        CruiseControlEnabled = false;
-                                        ShowSubtitleMessage("Cruise control cannot be enabled because the target speed was not set yet or is too low.", 3000);
-                                    }
-                                    else
-                                        ShowSubtitleMessage("Cruise control enabled.");
-                                }
-                                else
-                                {
-                                    ShowSubtitleMessage("Cruise control disabled.");
-                                }
-                            }
+                            ToggleCruiseControl();
                         }
 
                         // Cruise control set target speed
                         if (ImGuiHelper.IsKeyPressed(ModSettings.CruiseControlSetTargetSpeedKey, false))
                         {
-                            CruiseControlTargetSpeed = currentVehicleSpeedRaw;
-
-                            if (CruiseControlTargetSpeed.InBetween(-1f, 1f))
-                            {
-                                if (!ModSettings.EnableDashboard)
-                                {
-                                    CruiseControlEnabled = false;
-                                    ShowSubtitleMessage("Please set a higher target speed for cruise control. Cruise control got disabled.", 3500);
-                                }
-                                else
-                                {
-                                    ShowSubtitleMessage("Please set a higher target speed for cruise control.", 3000);
-                                }
-                            }
-                            else
-                            {
-                                if (!ModSettings.EnableDashboard)
-                                {
-                                    ShowSubtitleMessage("Cruise control target speed set to {0} {1}.", (int)currentVehicleSpeed, ModSettings.UseMPH ? "MPH" : "KM/H");
-                                }
-                            }
+                            SetCruiseControlTargetSpeed();
                         }
 
                         // Seatbelt

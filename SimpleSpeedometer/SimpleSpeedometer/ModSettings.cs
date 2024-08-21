@@ -102,7 +102,7 @@ namespace SimpleSpeedometer
             // Dashboard
             EnableDashboard =                   settings.GetBoolean("Dashboard", "Enable", true);
             DashboardOffset =                   settings.GetVector2("Dashboard", "Offset", new Vector2(100f, 90f));
-            HideWhenSubtitleIsBeingDisplayed =  settings.GetBoolean("Dashboard", "HideWhenSubtitleIsBeingDisplayed", false);
+            HideWhenSubtitleIsBeingDisplayed =  settings.GetBoolean("Dashboard", "HideWhenSubtitleIsBeingDisplayed", true);
 
             ShowEngineIcon =        settings.GetBoolean("Dashboard", "ShowEngineIcon", true);
             ShowABSIcon =           settings.GetBoolean("Dashboard", "ShowABSIcon", true);
