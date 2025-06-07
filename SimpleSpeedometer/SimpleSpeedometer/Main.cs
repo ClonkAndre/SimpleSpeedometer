@@ -698,6 +698,9 @@ namespace SimpleSpeedometer
         }
         private bool IsVehicleTypeValidForDashboard()
         {
+            if (!IsCurrentVehicleValid())
+                return false;
+
             eVehicleType type = (eVehicleType)currentVehicle.VehicleType;
 
             return type == eVehicleType.VEHICLE_TYPE_AUTOMOBILE
